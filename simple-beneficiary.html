@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Beneficiary Demo</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Central Security Module -->
+    <script src="sanitize.js"></script>
+</head>
+<body class="bg-gray-100 p-6">
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-2xl font-bold mb-6">Beneficiary Demo</h1>
+
+        <!-- Beneficiaries Section -->
+        <div class="space-y-4 border border-gray-200 rounded-md p-4">
+            <label class="block text-lg font-medium text-gray-800">Beneficiaries</label>
+            
+            <!-- Beneficiary List -->
+            <div id="beneficiaryListDisplay" class="space-y-2 min-h-[50px]">
+                <!-- Beneficiaries will appear here -->
+            </div>
+            
+            <!-- Total and Add Button -->
+            <div class="flex justify-between items-center">
+                <span id="totalDisplay" class="text-sm font-medium text-gray-600">Total Assigned: 0%</span>
+                <button type="button" onclick="openModal()" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i> Add Beneficiary
+                </button>
+            </div>
+            
+            <p class="text-xs text-gray-500">Assign a percentage of post rewards (max 8 users, max 100% total).</p>
+        </div>
+
+        <!-- Hidden input for form submission -->
+        <input type="hidden" id="beneficiaryData" name="beneficiaryData" value="[]">
+        
+        <!-- Result of demonstration -->
+        <div class="mt-8 p-4 bg-gray-100 rounded-md">
+            <h3 class="font-medium mb-2">Current Beneficiary Data (JSON):</h3>
+            <pre id="jsonDisplay" class="text-sm bg-white p-2 rounded border overflow-auto max-h-[200px]">[]</pre>
+        </div>
+    </div>
+
+    <!-- Beneficiary Modal -->
+    <div id="beneficiaryModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-user-plus mr-2 text-blue-600"></i>Add Beneficiary
+                </h3>
+                <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-user mr-2 text-gray-500"></i>Username
+                    </label>
+                    <input type="text" id="username" class="w-full px-3 py-2 border border-gray-300 rounded-md" 
+                           placeholder="Enter Hive username">
+                </div>
+                
+                <div>
+                    <label for="percentage" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-percentage mr-2 text-gray-500"></i>Percentage (%)
+                    </label>
+                    <input type="number" id="percentage" class="w-full px-3 py-2 border border-gray-300 rounded-md" 
+                           placeholder="e.g., 10" min="1" max="100" step="1">
+                </div>
+                
+                <div id="modalError" class="text-red-600 text-sm hidden"></div>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3 border-t pt-4">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">
+                    Cancel
+                </button>
+                <button type="button" onclick="addBeneficiary()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                    <i class="fas fa-plus mr-2"></i>Add Beneficiary
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Global array to store beneficiaries
+        let beneficiaries = [];
+        
+        // Open modal
+        function openModal() {
+            // Clear inputs
+            document.getElementById('username').value = '';
+            document.getElementById('percentage').value = '';
+            document.getElementById('modalError').textContent = '';
+            document.getElementById('modalError').classList.add('hidden');
+            
+            // Show modal
+            document.getElementById('beneficiaryModal').classList.remove('hidden');
+            
+            // Focus username input
+            setTimeout(() => {
+                document.getElementById('username').focus();
+            }, 100);
+        }
+        
+        // Close modal
+        function closeModal() {
+            document.getElementById('beneficiaryModal').classList.add('hidden');
+        }
+        
+        // Display error in modal
+        function showError(message) {
+            const errorElement = document.getElementById('modalError');
+            errorElement.textContent = message;
+            errorElement.classList.remove('hidden');
+        }
+        
+        // Add beneficiary
+        function addBeneficiary() {
+            // Get values
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const percentageText = document.getElementById('percentage').value;
+            const percentage = parseFloat(percentageText);
+            
+            // Clear previous error
+            document.getElementById('modalError').classList.add('hidden');
+            
+            // Validate
+            if (!username) {
+                showError('Username is required.');
+                return;
+            }
+            
+            if (isNaN(percentage) || percentage <= 0 || percentage > 100) {
+                showError('Percentage must be between 1 and 100.');
+                return;
+            }
+            
+            if (beneficiaries.length >= 8) {
+                showError('Maximum 8 beneficiaries allowed.');
+                return;
+            }
+            
+            if (beneficiaries.some(b => b.account === username)) {
+                showError(`Beneficiary '${username}' already added.`);
+                return;
+            }
+            
+            // Calculate weights (Hive uses integer percentages * 100)
+            const currentTotalWeight = beneficiaries.reduce((sum, b) => sum + b.weight, 0);
+            const newWeight = Math.round(percentage * 100);
+            
+            if (currentTotalWeight + newWeight > 10000) { // 100% = 10000
+                const remainingPercent = ((10000 - currentTotalWeight) / 100).toFixed(2);
+                showError(`Cannot add ${percentage}%. Total exceeds 100%. Remaining: ${remainingPercent}%.`);
+                return;
+            }
+            
+            // Add beneficiary
+            beneficiaries.push({ account: username, weight: newWeight });
+            
+            // Update display
+            renderBeneficiaries();
+            
+            // Update JSON display
+            updateJsonDisplay();
+            
+            // Close modal
+            closeModal();
+        }
+        
+        // Remove beneficiary
+        function removeBeneficiary(index) {
+            beneficiaries.splice(index, 1);
+            renderBeneficiaries();
+            updateJsonDisplay();
+        }
+        
+        // Render beneficiaries list
+        function renderBeneficiaries() {
+            const listElement = document.getElementById('beneficiaryListDisplay');
+            listElement.innerHTML = '';
+            
+            let totalPercent = 0;
+            
+            if (beneficiaries.length === 0) {
+                listElement.innerHTML = '<div class="text-gray-500 italic text-sm">No beneficiaries added yet.</div>';
+            } else {
+                beneficiaries.forEach((ben, index) => {
+                    const percent = ben.weight / 100;
+                    totalPercent += percent;
+                    
+                    const item = document.createElement('div');
+                    item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-200';
+                    item.innerHTML = `
+                        <div>
+                            <i class="fas fa-user text-gray-600 mr-2"></i>
+                            <span class="font-medium">${ben.account}</span>
+                            <span class="text-gray-600 ml-2">(${percent.toFixed(0)}%)</span>
+                        </div>
+                        <button type="button" onclick="removeBeneficiary(${index})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    
+                    listElement.appendChild(item);
+                });
+            }
+            
+            // Update total display
+            document.getElementById('totalDisplay').textContent = `Total Assigned: ${totalPercent.toFixed(0)}%`;
+            
+            // Update hidden input with JSON data
+            document.getElementById('beneficiaryData').value = JSON.stringify(beneficiaries);
+        }
+        
+        // Update JSON display for demonstration
+        function updateJsonDisplay() {
+            document.getElementById('jsonDisplay').textContent = JSON.stringify(beneficiaries, null, 2);
+        }
+        
+        // Initialize
+        renderBeneficiaries();
+    </script>
+    <script src="welcome-popup.js"></script>
+    <script src="maintenance-mode.js"></script>
+    <script src="important-popup.js"></script>
+    <script src="secret-code.js"></script>
+</body>
+</html> 

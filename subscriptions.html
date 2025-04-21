@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Subscriptions - Hive Postify</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- DHive Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/dhive@1.2.7/dist/dhive.js"></script>
+    <!-- Marked for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- DOMPurify for sanitizing HTML -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <!-- Central Security Module -->
+    <script src="sanitize.js"></script>
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="styles.css">
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: { }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar (Copied from index.html) -->
+    <nav class="fixed top-0 w-full bg-white shadow-md z-50">
+        <div class="flex items-center justify-between px-4 h-14">
+            <!-- Left Section -->
+            <div class="flex items-center">
+                <button id="menuToggle" class="p-2 hover:bg-gray-100 rounded-full lg:block hidden">
+                    <i class="fas fa-bars text-gray-600"></i>
+                </button>
+                <a href="index.html" class="flex items-center ml-2">
+                    <div class="flex items-center">
+                        <img src="https://images.hive.blog/DQmSs1y7RSnCySj8TNheBN6jWqTwSP65Ufw5oCx9g27rVoM/Untitled%20design.png" 
+                             alt="Hive Logo" 
+                             class="h-8 w-8 object-contain">
+                        <span class="ml-2 text-xl font-semibold text-gray-900">Hive <span class="text-red-600">Postify</span></span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Center Section - Search (Optional for this page, can be added later if needed) -->
+            <div class="flex-grow max-w-2xl mx-4">
+                 <div class="relative">
+                     <input type="text" id="searchInput" 
+                            class="w-full px-4 py-2 bg-gray-100 border border-gray-300 rounded-full focus:outline-none focus:border-blue-500"
+                            placeholder="Search subscriptions...">
+                     <button class="absolute right-3 top-2">
+                         <i class="fas fa-search text-gray-600"></i>
+                     </button>
+                 </div>
+             </div>
+
+            <!-- Right Section -->
+            <div class="flex items-center space-x-4">
+                <button id="loginBtn" class="p-2 hover:bg-gray-100 rounded-full">
+                    <i class="fas fa-user text-gray-600"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar (Copied from index.html, update active link) -->
+     <aside id="sidebar" class="fixed left-0 top-14 h-[calc(100vh-56px)] w-16 bg-white shadow-lg transition-all duration-300 transform -translate-x-full lg:translate-x-0 z-40">
+         <div class="py-2">
+             <a href="index.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                 <i class="fas fa-house w-6 text-lg"></i>
+                 <span class="sidebar-text hidden ml-3">Home</span>
+             </a>
+             <a href="friends.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                 <i class="fas fa-user-friends w-6 text-lg"></i>
+                 <span class="sidebar-text hidden ml-3">Friends</span>
+             </a>
+             <a href="communities.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                 <i class="fas fa-users w-6 text-lg"></i>
+                 <span class="sidebar-text hidden ml-3">Communities</span>
+             </a>
+             <a href="subscriptions.html" class="flex items-center px-4 py-3 text-gray-900 hover:bg-gray-100 bg-gray-100"> <!-- Active link -->
+                 <i class="fas fa-star w-6 text-lg"></i>
+                 <span class="sidebar-text hidden ml-3">Subscriptions</span>
+             </a>
+         </div>
+     </aside>
+
+    <!-- Mobile Bottom Navigation (Copied from index.html, update active link) -->
+    <nav class="fixed bottom-0 left-0 w-full bg-white border-t lg:hidden z-50">
+        <div class="flex justify-around py-3">
+            <a href="index.html" class="text-gray-600 flex flex-col items-center">
+                <i class="fas fa-house text-xl"></i>
+                <span class="text-xs mt-1">Home</span>
+            </a>
+            <a href="friends.html" class="text-gray-600 flex flex-col items-center">
+                <i class="fas fa-user-friends text-xl"></i>
+                <span class="text-xs mt-1">Friends</span>
+            </a>
+            <a href="communities.html" class="text-gray-600 flex flex-col items-center">
+                <i class="fas fa-users text-xl"></i>
+                <span class="text-xs mt-1">Communities</span>
+            </a>
+            <a href="subscriptions.html" class="text-gray-900 flex flex-col items-center"> <!-- Active link -->
+                <i class="fas fa-star text-xl"></i>
+                <span class="text-xs mt-1">Subscriptions</span>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="pt-20 lg:ml-16 px-4 pb-20 lg:pb-16 transition-all duration-300">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">My Subscribed Communities</h1>
+        
+        <!-- Loading Indicator -->
+        <div id="loadingIndicator" class="hidden col-span-full flex justify-center items-center py-10">
+             <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+         </div>
+
+        <!-- Error Message Area -->
+         <div id="errorMessage" class="hidden col-span-full text-center py-10 px-4">
+             <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                 <strong class="font-bold">Error:</strong>
+                 <span class="block sm:inline" id="errorMessageText">Something went wrong.</span>
+             </div>
+         </div>
+
+        <!-- Grid for Subscribed Communities -->
+        <div id="communitiesGrid" class="grid gap-4 sm:gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 max-w-[2200px] mx-auto">
+            <!-- Subscribed communities will be dynamically inserted here -->
+        </div>
+
+         <!-- Placeholder for when not logged in or no subscriptions -->
+         <div id="noSubscriptionsMessage" class="hidden text-center py-20 px-4">
+             <i class="fas fa-star text-5xl text-gray-400 mb-4"></i>
+             <h2 class="text-xl font-semibold text-gray-700 mb-2">No Subscriptions Found</h2>
+             <p class="text-gray-500">You need to be logged in to see your subscriptions.</p>
+             <button id="loginPromptBtn" class="mt-4 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700">Log In</button>
+         </div>
+
+    </main>
+
+    <!-- Login Modal (Copied from index.html) -->
+     <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[100]">
+         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0 relative" id="loginBox">
+             <!-- Close Button -->
+             <button id="closeLoginModal" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100">
+                 <i class="fas fa-times"></i>
+             </button>
+             <!-- Logo -->
+             <div class="flex justify-center mb-8">
+                 <div class="flex items-center">
+                     <img src="https://images.hive.blog/DQmSs1y7RSnCySj8TNheBN6jWqTwSP65Ufw5oCx9g27rVoM/Untitled%20design.png" 
+                          alt="Hive Logo" 
+                          class="h-16 w-16 object-contain">
+                     <span class="ml-2 text-2xl font-bold">Hive <span class="text-red-600">Postify</span></span>
+                 </div>
+             </div>
+             
+             <form id="loginForm" class="space-y-6">
+                 <div>
+                     <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                     <div class="relative">
+                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                             <i class="fas fa-user"></i>
+                         </span>
+                         <input type="text" id="username" name="username" 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm 
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                       bg-gray-50 hover:bg-white transition-colors"
+                                placeholder="Enter your username">
+                     </div>
+                 </div>
+                 <div>
+                     <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Posting Key or Password</label>
+                     <div class="relative">
+                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                             <i class="fas fa-lock"></i>
+                         </span>
+                         <input type="password" id="password" name="password" 
+                                class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm 
+                                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                       bg-gray-50 hover:bg-white transition-colors"
+                                placeholder="Enter password or posting key">
+                     </div>
+                 </div>
+                 <div id="loginError" class="text-red-500 text-sm mt-2 hidden"></div>
+                 <div class="pt-2">
+                     <button type="submit" 
+                             class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm 
+                                    text-base font-medium text-white bg-blue-600 hover:bg-blue-700 
+                                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                         Log In
+                     </button>
+                 </div>
+             </form>
+         </div>
+     </div>
+
+    <!-- Link to JavaScript -->
+    <script src="subscriptions.js"></script>
+    <script src="welcome-popup.js"></script>
+    <script src="maintenance-mode.js"></script>
+    <script src="important-popup.js"></script>
+    <script src="secret-code.js"></script>
+</body>
+</html>

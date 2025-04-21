@@ -1,0 +1,123 @@
+.comment {
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px solid #e1e4e8;
+    border-radius: 6px;
+    background: #fff;
+}
+
+.comment-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.comment-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.comment-author {
+    font-weight: 600;
+    color: #24292e;
+    text-decoration: none;
+    margin-right: 0.5rem;
+}
+
+.comment-date {
+    color: #586069;
+    font-size: 0.9rem;
+}
+
+.comment-body {
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.comment-footer {
+    margin-top: 0.5rem;
+    border-top: 1px solid #eaecef;
+    padding-top: 0.5rem;
+}
+
+.comment-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.comment-upvote,
+.comment-downvote {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 1px solid transparent;
+    padding: 0.4rem;
+    cursor: pointer;
+    color: #586069;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+}
+
+.comment-upvote:hover {
+    border-color: #28a745;
+    color: #28a745;
+    background: rgba(40, 167, 69, 0.1);
+}
+
+.comment-downvote:hover {
+    border-color: #d73a49;
+    color: #d73a49;
+    background: rgba(215, 58, 73, 0.1);
+}
+
+.comment-upvote.voted-up {
+    border-color: #28a745;
+    color: #fff;
+    background: #28a745;
+}
+
+.comment-downvote.voted-down {
+    border-color: #d73a49;
+    color: #fff;
+    background: #d73a49;
+}
+
+.comment-vote-count {
+    font-weight: 600;
+    color: #24292e;
+    min-width: 2rem;
+    text-align: center;
+}
+
+.reply-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: none;
+    border: 1px solid #e1e4e8;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    color: #24292e;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.reply-btn:hover {
+    background: #f6f8fa;
+    border-color: #d1d5da;
+}
+
+.comment-replies {
+    margin-left: 2rem;
+    margin-top: 1rem;
+    border-left: 2px solid #eaecef;
+    padding-left: 1rem;
+}

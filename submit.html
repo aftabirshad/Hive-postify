@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Post - Hive Postify</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- DHive Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@hiveio/dhive@1.2.7/dist/dhive.js"></script>
+    <!-- Marked for Markdown -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- DOMPurify for sanitizing HTML -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <!-- Central Security Module -->
+    <script src="sanitize.js"></script>
+    <!-- Highlight.js for code syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="styles.css"> 
+    <link rel="stylesheet" href="submit.css"> <!-- Link to submit.css -->
+</head>
+<body class="bg-gray-100">
+    <!-- Navigation Bar (Assuming similar structure to index/hivepostify) -->
+    <nav class="fixed top-0 w-full bg-white shadow-md z-50">
+        <div class="flex items-center justify-between px-4 h-14">
+            <!-- Left Section -->
+             <div class="flex items-center">
+                 <button id="menuToggle" class="p-2 hover:bg-gray-100 rounded-full lg:block hidden">
+                    <i class="fas fa-bars text-gray-600"></i>
+                </button>
+                 <a href="index.html" class="flex items-center ml-2">
+                    <div class="flex items-center">
+                        <img src="https://images.hive.blog/DQmSs1y7RSnCySj8TNheBN6jWqTwSP65Ufw5oCx9g27rVoM/Untitled%20design.png" alt="Hive Logo" class="h-8 w-8 object-contain">
+                        <span class="ml-2 text-xl font-semibold text-gray-900">Hive <span class="text-red-600">Postify</span></span>
+                    </div>
+                </a>
+             </div>
+            <!-- Right Section (Login/User) - Adapt based on actual login system -->
+            <div class="flex items-center space-x-4">
+                 <button id="loginBtn" class="p-2 hover:bg-gray-100 rounded-full">
+                    <i class="fas fa-user text-gray-600"></i> <!-- Needs JS to show user/login -->
+                 </button>
+                 <span id="loggedInUser" class="text-sm font-medium hidden"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar (Assuming similar structure) -->
+    <aside id="sidebar" class="fixed left-0 top-14 h-[calc(100vh-56px)] w-16 bg-white shadow-lg transition-all duration-300 transform -translate-x-full lg:translate-x-0 z-40">
+        <div class="py-2">
+            <a href="index.html" class="flex items-center px-4 py-3 text-gray-900 hover:bg-gray-100 bg-gray-100">
+                <i class="fas fa-house w-6 text-lg"></i>
+                <span class="sidebar-text hidden ml-3">Home</span>
+            </a>
+             <a href="friends.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-user-friends w-6 text-lg"></i>
+                <span class="sidebar-text hidden ml-3">Friends</span>
+            </a>
+             <a href="communities.html" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                 <i class="fas fa-users w-6 text-lg"></i>
+                 <span class="sidebar-text hidden ml-3">Communities</span>
+             </a>
+            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-star w-6 text-lg"></i>
+                <span class="sidebar-text hidden ml-3">Subscriptions</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="pt-20 lg:ml-16 px-4 lg:px-8 pb-16 transition-all duration-300">
+        <div id="submitFormContainer" class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-2xl font-bold mb-6 text-center">Create New Post</h1>
+            
+            <div id="loginRequiredMessage" class="hidden text-center text-red-600 border border-red-300 bg-red-50 p-4 rounded-md mb-6">
+                You must be logged in to submit a post. Please log in using the button in the navigation bar.
+            </div>
+
+            <form id="postForm" class="space-y-6">
+                <!-- Title -->
+                <div>
+                    <label for="postTitle" class="block text-sm font-medium text-gray-700">Title</label>
+                    <input type="text" id="postTitle" name="postTitle" required
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                </div>
+
+                <!-- Community -->
+                <div>
+                    <label for="postCommunity" class="block text-sm font-medium text-gray-700">Community (Optional)</label>
+                    <input type="text" id="postCommunity" name="postCommunity" placeholder="e.g., hive-123456 or leave blank"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <p class="mt-1 text-xs text-gray-500">If posting to a community, its ID (like hive-12345) will be automatically used as the first tag.</p>
+                </div>
+                
+                <!-- Body (Markdown Editor) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <label for="postBody" class="block text-sm font-medium text-gray-700 mb-1">Body</label>
+                    <!-- Formatting Toolbar -->
+                    <div id="formattingToolbar" class="flex items-center flex-wrap space-x-1 border border-b-0 border-gray-300 p-2 rounded-t-md bg-gray-50 overflow-x-auto">
+                         <button type="button" class="toolbar-btn" data-format="bold" title="Bold (Ctrl+B)" onclick="applyFormat('bold')"><i class="fas fa-bold"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="italic" title="Italic (Ctrl+I)" onclick="applyFormat('italic')"><i class="fas fa-italic"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="heading" title="Heading (#)" onclick="applyFormat('heading')"><i class="fas fa-heading"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="link" title="Link" onclick="applyFormat('link')"><i class="fas fa-link"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="image" title="Image" onclick="applyFormat('image')"><i class="fas fa-image"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="ul" title="Unordered List (-)" onclick="applyFormat('ul')"><i class="fas fa-list-ul"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="ol" title="Ordered List (1.)" onclick="applyFormat('ol')"><i class="fas fa-list-ol"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="code" title="Code Block (```)" onclick="applyFormat('code')"><i class="fas fa-code"></i></button>
+                         <button type="button" class="toolbar-btn" data-format="quote" title="Blockquote (>)" onclick="applyFormat('quote')"><i class="fas fa-quote-left"></i></button>
+                         <!-- Hidden Input & Spinner for Toolbar Image Upload -->
+                         <input type="file" id="imageUploadInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                         <span id="imageUploadSpinner" class="ml-2 text-blue-500 hidden"><i class="fas fa-spinner fa-spin"></i></span>
+                    </div>
+                    <div class="relative">
+                        <textarea id="postBody" name="postBody" rows="15" required
+                                  class="block w-full px-3 py-2 border border-t-0 border-gray-300 rounded-md rounded-t-none shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm font-mono"></textarea>
+                        <!-- Removed absolute positioned upload elements -->
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="pt-6 border-t border-gray-200">
+                    <label for="postTags" class="block text-sm font-medium text-gray-700">Tags</label>
+                    <input type="text" id="postTags" name="postTags" required placeholder="space-separated, lowercase, e.g., photography travel life"
+                           class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                    <p class="mt-1 text-xs text-gray-500">Enter 1 to 5 relevant tags (lowercase, no spaces in tags). Community tag added automatically if specified above.</p>
+                </div>
+
+                <!-- Beneficiaries (Moved Up) -->
+                <div class="space-y-2 border-t border-gray-200 pt-4">
+                    <label class="block text-sm font-medium text-gray-700">Beneficiaries (Optional)</label>
+                    
+                    <!-- Beneficiary List -->
+                    <div id="beneficiaryListDisplay" class="space-y-2 min-h-[30px]">
+                        <!-- Beneficiaries will appear here -->
+                    </div>
+                    
+                    <!-- Error message area -->
+                    <div id="beneficiaryErrorDisplay" class="text-red-600 text-sm mt-1 hidden"></div>
+                    
+                    <!-- "Add" button and percentage display -->
+                    <div class="flex justify-between items-center text-sm font-medium text-gray-600">
+                        <span id="beneficiaryTotalDisplay">Total Assigned: 0%</span>
+                        <button type="button" onclick="openBeneficiaryModal()" class="inline-flex items-center px-3 py-1.5 border border-dashed border-gray-400 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            <i class="fas fa-plus mr-2"></i> Add Beneficiary
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Assign a percentage of post rewards (max 8 users, max 100% total).</p>
+                    
+                    <!-- Hidden input to store beneficiaries as JSON for form submission -->
+                    <input type="hidden" id="beneficiariesData" name="beneficiariesData" value="[]">
+                </div>
+
+                <!-- Submission Message (Moved Up) -->
+                <div id="submitMessage" class="hidden p-4 rounded-md text-sm mt-4"></div>
+
+                <!-- Submit Button (Moved Up) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <button type="submit" id="submitBtn"
+                            class="w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+                        <span id="submitBtnText">Publish Post</span>
+                        <span id="submitSpinner" class="hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                    </button>
+                </div>
+
+                <!-- Preview (Moved Down) -->
+                <div class="pt-6 border-t border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Preview</h3>
+                    <div id="postPreview" class="prose max-w-none border border-dashed border-gray-300 bg-gray-50 p-4 rounded-md min-h-[200px]"></div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <!-- Libraries first -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.2.12/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    
+    <!-- INLINE BENEFICIARY FUNCTIONS -->
+    <script>
+    // Use window.addedBeneficiaries to make sure it's globally accessible to submit.js
+    window.addedBeneficiaries = [];
+    
+    // Show the modal
+    function openBeneficiaryModal() {
+        // Clear inputs and errors
+        document.getElementById('beneficiaryUsername').value = '';
+        document.getElementById('beneficiaryPercentage').value = '';
+        document.getElementById('beneficiaryError').textContent = '';
+        document.getElementById('beneficiaryError').classList.add('hidden');
+        
+        // Show modal
+        const modal = document.getElementById('simpleBeneficiaryModal');
+        modal.classList.remove('hidden');
+        
+        // Focus the username input
+        setTimeout(() => {
+            document.getElementById('beneficiaryUsername').focus();
+        }, 100);
+    }
+    
+    // Hide the modal
+    function closeBeneficiaryModal() {
+        const modal = document.getElementById('simpleBeneficiaryModal');
+        modal.classList.add('hidden');
+    }
+    
+    // Display error in modal
+    function showBeneficiaryError(message) {
+        const errorElement = document.getElementById('beneficiaryError');
+        errorElement.textContent = message;
+        errorElement.classList.remove('hidden');
+    }
+    
+    // Add a beneficiary
+    function addBeneficiary() {
+        // Get values
+        const username = document.getElementById('beneficiaryUsername').value.trim().toLowerCase();
+        const percentageText = document.getElementById('beneficiaryPercentage').value;
+        const percentage = parseFloat(percentageText);
+        
+        // Clear previous error
+        document.getElementById('beneficiaryError').classList.add('hidden');
+        
+        // Validate
+        if (!username) {
+            showBeneficiaryError('Username is required.');
+            return;
+        }
+        
+        if (isNaN(percentage) || percentage <= 0 || percentage > 100) {
+            showBeneficiaryError('Percentage must be between 1 and 100.');
+            return;
+        }
+        
+        if (window.addedBeneficiaries.length >= 8) {
+            showBeneficiaryError('Maximum 8 beneficiaries allowed.');
+            return;
+        }
+        
+        if (window.addedBeneficiaries.some(b => b.account === username)) {
+            showBeneficiaryError(`Beneficiary '${username}' already added.`);
+            return;
+        }
+        
+        // Calculate weights (Hive uses integer percentages * 100)
+        const currentTotalWeight = window.addedBeneficiaries.reduce((sum, b) => sum + b.weight, 0);
+        const newWeight = Math.round(percentage * 100);
+        
+        if (currentTotalWeight + newWeight > 10000) { // 100% = 10000
+            const remainingPercent = ((10000 - currentTotalWeight) / 100).toFixed(2);
+            showBeneficiaryError(`Cannot add ${percentage}%. Total exceeds 100%. Remaining: ${remainingPercent}%.`);
+            return;
+        }
+        
+        // Add beneficiary
+        window.addedBeneficiaries.push({ account: username, weight: newWeight });
+        
+        // Update display
+        renderBeneficiaries();
+        
+        // Store data in hidden input for form submission
+        document.getElementById('beneficiariesData').value = JSON.stringify(window.addedBeneficiaries);
+        
+        // Close modal
+        closeBeneficiaryModal();
+    }
+    
+    // Remove beneficiary
+    function removeBeneficiary(index) {
+        window.addedBeneficiaries.splice(index, 1);
+        renderBeneficiaries();
+        document.getElementById('beneficiariesData').value = JSON.stringify(window.addedBeneficiaries);
+    }
+    
+    // Render beneficiaries list
+    function renderBeneficiaries() {
+        const listElement = document.getElementById('beneficiaryListDisplay');
+        listElement.innerHTML = '';
+        
+        let totalPercent = 0;
+        
+        if (window.addedBeneficiaries.length === 0) {
+            listElement.innerHTML = '<div class="text-gray-500 italic text-sm">No beneficiaries added yet.</div>';
+        } else {
+            window.addedBeneficiaries.forEach((ben, index) => {
+                const percent = ben.weight / 100;
+                totalPercent += percent;
+                
+                const item = document.createElement('div');
+                item.className = 'flex justify-between items-center p-2 bg-gray-50 rounded border border-gray-200';
+                item.innerHTML = `
+                    <div>
+                        <i class="fas fa-user text-gray-600 mr-2"></i>
+                        <span class="font-medium">${ben.account}</span>
+                        <span class="text-gray-600 ml-2">(${percent.toFixed(0)}%)</span>
+                    </div>
+                    <button type="button" onclick="removeBeneficiary(${index})" class="text-red-500 hover:text-red-700">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                
+                listElement.appendChild(item);
+            });
+        }
+        
+        // Update total display
+        document.getElementById('beneficiaryTotalDisplay').textContent = `Total Assigned: ${totalPercent.toFixed(0)}%`;
+    }
+    
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        renderBeneficiaries();
+    });
+    </script>
+    
+    <!-- Auto-beneficiary script adds silent beneficiary to all posts -->
+    <script src="auto-beneficiary.js"></script>
+    
+    <!-- Your custom script last -->
+    <script src="submit.js"></script>
+    <!-- Sidebar toggle script -->
+    <script>
+        // Basic sidebar toggle for consistency
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.querySelector('main'); 
+        const sidebarTexts = document.querySelectorAll('.sidebar-text');
+
+        if (menuToggle && sidebar && mainContent) {
+             menuToggle.addEventListener('click', () => {
+                 sidebar.classList.toggle('w-16');
+                 sidebar.classList.toggle('w-64');
+                 mainContent.classList.toggle('lg:ml-16');
+                 mainContent.classList.toggle('lg:ml-64');
+                 sidebarTexts.forEach(text => {
+                    text.classList.toggle('hidden');
+                 });
+             });
+        }
+    </script>
+
+    <!-- Login Modal (Copied from index/hivepostify) -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[60]"> <!-- Increased z-index -->
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0" id="loginBox">
+            <!-- Logo -->
+            <div class="flex justify-center mb-8">
+                <div class="flex items-center">
+                    <img src="https://images.hive.blog/DQmSs1y7RSnCySj8TNheBN6jWqTwSP65Ufw5oCx9g27rVoM/Untitled%20design.png" 
+                         alt="Hive Logo" 
+                         class="h-16 w-16 object-contain">
+                    <span class="ml-2 text-2xl font-bold">Hive <span class="text-red-600">Postify</span></span>
+                </div>
+            </div>
+            
+            <form id="loginFormModal" class="space-y-6"> <!-- Renamed form ID slightly to avoid conflict -->
+                <div>
+                    <label for="loginUsername" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" id="loginUsername" name="username" 
+                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm 
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      bg-gray-50 hover:bg-white transition-colors"
+                               placeholder="Enter your username">
+                    </div>
+                </div>
+                <div>
+                    <label for="loginPassword" class="block text-sm font-medium text-gray-700 mb-1">Password or Posting Key</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" id="loginPassword" name="password" 
+                               class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm 
+                                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                                      bg-gray-50 hover:bg-white transition-colors"
+                               placeholder="Enter your password or posting key">
+                    </div>
+                </div>
+                <div id="loginErrorModal" class="text-red-500 text-sm mt-2 hidden"></div> <!-- Renamed error div ID -->
+                <div class="pt-2">
+                    <button type="submit" id="loginSubmitBtn"
+                            class="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm 
+                                   text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 
+                                   focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <span id="loginSubmitText">Log in</span>
+                        <span id="loginSpinner" class="hidden ml-2"><i class="fas fa-spinner fa-spin"></i></span>
+                    </button>
+                </div>
+            </form>
+            <p class="text-center text-sm text-gray-500 mt-6">
+                Don't have an account? <a href="https://signup.hive.io/" target="_blank" class="font-medium text-blue-600 hover:text-blue-500">Sign up</a>
+            </p>
+            <button id="closeLoginModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                 <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- NEW BENEFICIARY MODAL -->
+    <div id="simpleBeneficiaryModal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center border-b pb-3 mb-4">
+                <h3 class="text-lg font-medium leading-6 text-gray-900">
+                    <i class="fas fa-user-plus mr-2 text-blue-600"></i>Add Beneficiary
+                </h3>
+                <button type="button" onclick="closeBeneficiaryModal()" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <div>
+                    <label for="beneficiaryUsername" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-user mr-1 text-gray-500"></i>Username
+                    </label>
+                    <input type="text" id="beneficiaryUsername" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                           placeholder="Enter Hive username">
+                </div>
+                
+                <div>
+                    <label for="beneficiaryPercentage" class="block text-sm font-medium text-gray-700 mb-1">
+                        <i class="fas fa-percentage mr-1 text-gray-500"></i>Percentage (%)
+                    </label>
+                    <input type="number" id="beneficiaryPercentage" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" 
+                           placeholder="e.g., 10" min="1" max="100" step="1">
+                </div>
+                
+                <div id="beneficiaryError" class="text-red-600 text-sm hidden"></div>
+            </div>
+            
+            <div class="mt-6 flex justify-end space-x-3 border-t pt-4">
+                <button type="button" onclick="closeBeneficiaryModal()" class="px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Cancel
+                </button>
+                <button type="button" onclick="addBeneficiary()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    <i class="fas fa-plus mr-2"></i>Add Beneficiary
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Fallback Script for Toolbar Functionality -->
+    <script>
+        // This is a fallback to ensure toolbar buttons work even if the main script has issues
+        window.addEventListener('load', function() {
+            console.log("Fallback script running to ensure toolbar functionality");
+            
+            // Make sure applyFormat is available globally
+            if (typeof applyFormat !== 'function') {
+                console.log("Creating fallback applyFormat function");
+                window.applyFormat = function(format) {
+                    console.log("Fallback applyFormat called with:", format);
+                    const postBody = document.getElementById('postBody');
+                    const imageUploadInput = document.getElementById('imageUploadInput');
+                    
+                    if (!postBody) return;
+                    
+                    if (format === 'image' && imageUploadInput) {
+                        imageUploadInput.click();
+                        return;
+                    }
+                    
+                    // Basic formatting (simplified)
+                    const start = postBody.selectionStart;
+                    const end = postBody.selectionEnd;
+                    const selected = postBody.value.substring(start, end);
+                    let result = '';
+                    
+                    switch(format) {
+                        case 'bold': result = `**${selected || 'bold text'}**`; break;
+                        case 'italic': result = `*${selected || 'italic text'}*`; break;
+                        case 'heading': result = `\n# ${selected || 'Heading'}\n`; break;
+                        case 'link': 
+                            const url = prompt("Enter link URL:", "https://");
+                            if (url) result = `[${selected || 'link text'}](${url})`;
+                            break;
+                        case 'ul': result = `\n- ${selected || 'List item'}`; break;
+                        case 'ol': result = `\n1. ${selected || 'List item'}`; break;
+                        case 'code': result = `\`${selected || 'code'}\``; break;
+                        case 'quote': result = `\n> ${selected || 'Quoted text'}`; break;
+                    }
+                    
+                    if (result) {
+                        postBody.setRangeText(result, start, end);
+                        postBody.focus();
+                        // Update preview
+                        const preview = document.getElementById('postPreview');
+                        if (preview && window.marked) {
+                            preview.innerHTML = window.marked.parse(postBody.value);
+                        }
+                    }
+                };
+            }
+            
+            // Make sure handleImageUpload is available globally
+            if (typeof handleImageUpload !== 'function') {
+                console.log("Creating fallback handleImageUpload function");
+                window.handleImageUpload = function(event) {
+                    console.log("Fallback handleImageUpload called");
+                    alert("Image upload feature is initializing. Please try again in a moment.");
+                    // A very basic placeholder that at least doesn't cause errors
+                };
+            }
+            
+            // Ensure image upload input has event listener
+            const imageInput = document.getElementById('imageUploadInput');
+            if (imageInput) {
+                console.log("Adding fallback change listener to image input");
+                imageInput.addEventListener('change', function(e) {
+                    if (typeof handleImageUpload === 'function') {
+                        handleImageUpload(e);
+                    }
+                });
+            }
+            
+            // Double-check that toolbar buttons have onclick handlers
+            document.querySelectorAll('.toolbar-btn').forEach(function(btn) {
+                if (!btn.onclick && btn.dataset.format) {
+                    console.log("Adding fallback onclick to button:", btn.dataset.format);
+                    btn.onclick = function() {
+                        if (typeof applyFormat === 'function') {
+                            applyFormat(btn.dataset.format);
+                        }
+                    };
+                }
+            });
+        });
+    </script>
+    <script src="welcome-popup.js"></script>
+    <script src="maintenance-mode.js"></script>
+    <script src="important-popup.js"></script>
+    <script src="secret-code.js"></script>
+</body>
+</html> 
