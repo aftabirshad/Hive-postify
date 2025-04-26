@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration
     const maintenanceMode = {
-        enabled: false, // Set to true to enable maintenance mode
+        enabled: true, // Set to true to enable maintenance mode
         title: "Maintenance in Progress",
         message: "We're performing scheduled maintenance to improve your experience. Please check back soon!",
         startTime: "May 10, 2023 - 2:00 PM", 
