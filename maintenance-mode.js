@@ -4,9 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const maintenanceMode = {
         enabled: true, // Set to true to enable maintenance mode
         title: "Maintenance in Progress",
-        message: "We're performing scheduled maintenance to improve your experience. Please check back soon!",
-        startTime: "May 10, 2023 - 2:00 PM", 
-        endTime: "May 10, 2023 - 4:00 PM",
+        message: "We are making some changes to our website based on Aftab's feedback, which he has requested or our shortcomings, we will fix it soon, but it will take us some time because I am bringing a transfer function to my HiveCeleo  website, which will show the details of the fund transfer. ",
+        startTime: "Apr 26, 2025 - 12:31 PM", 
+        endTime: "Apr 2025 not Defined Exect Date",
         allowClose: true, // Even if true, popup will reappear on any interaction
         redirectUrl: null, // Set to a URL if you want to redirect users instead of showing the popup
         compactMode: true // Set to true for a more compact popup
