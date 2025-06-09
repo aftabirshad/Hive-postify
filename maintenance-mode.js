@@ -2,7 +2,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Configuration
     const maintenanceMode = {
-        enabled: true, // Set to true to enable maintenance mode
+        enabled: false, // Set to true to enable maintenance mode
         title: "Maintenance in Progress",
         message: "We are making some changes to our website based on dr. Lobes (@drlobes) feedback, which he has requested or our shortcomings, we will fix it soon, but it will take us some time because I am bringing a transfer function to my HiveCeleo  website, which will show the details of the fund transfer. ",
         startTime: "Apr 26, 2025 - 12:31 PM", 
